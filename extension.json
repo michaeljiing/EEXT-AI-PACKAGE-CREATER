@@ -4,7 +4,7 @@
 	"displayName": "AI创建封装",
 	"description": "基于大模型的封装生成器",
 	"version": "1.0.0",
-	"publisher": "JLCEDA <support@lceda.cn>",
+	"publisher": "Michael <michael@163.com>",
 	"engines": {
 		"eda": "^2.3.0"
 	},
@@ -14,12 +14,12 @@
 		"url": ""
 	},
 	"categories": "Other",
-	"keywords": ["SDK"],
+	"keywords": ["AI", "Footprint", "Package", "Creator"],
 	"images": {
 		"logo": "./images/logo.png"
 	},
-	"homepage": "https://pro.lceda.cn",
-	"bugs": "https://lceda.cn/page/feedback?originPage=other",
+	"homepage": "https://github.com/michaeljiing/EEXT-AI-PACKAGE-CREATER",
+	"bugs": "https://github.com/michaeljiing/EEXT-AI-PACKAGE-CREATER/issues",
 	"activationEvents": {},
 	"entry": "./dist/index",
 	"dependentExtensions": {},
