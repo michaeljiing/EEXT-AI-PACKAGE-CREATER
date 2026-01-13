@@ -1,43 +1,41 @@
-[简体中文](./README.md) | [English](#) | [繁體中文](./README.zh-Hant.md) | [日本語](./README.ja.md) | [Русский](./README.ru.md)
+# AI Intelligent Library Builder
 
-# pro-api-sdk
+An AI-powered package generator based on a self-developed large language model, providing an intelligent component library construction solution for JLC EDA Professional Edition.
 
-JLCEDA & EasyEDA Pro Extension API Development Kit
+## Features
 
-<a href="https://github.com/easyeda/pro-api-sdk" style="vertical-align: inherit;" target="_blank"><img src="https://img.shields.io/github/stars/easyeda/pro-api-sdk" alt="GitHub Repo Stars" class="not-medium-zoom-image" style="display: inline; vertical-align: inherit;" /></a>&nbsp;<a href="https://github.com/easyeda/pro-api-sdk/issues" style="vertical-align: inherit;" target="_blank"><img src="https://img.shields.io/github/issues/easyeda/pro-api-sdk" alt="GitHub Issues" class="not-medium-zoom-image" style="display: inline; vertical-align: inherit;" /></a>&nbsp;<a href="https://github.com/easyeda/pro-api-sdk" style="vertical-align: inherit;" target="_blank"><img src="https://img.shields.io/github/repo-size/easyeda/pro-api-sdk" alt="GitHub Repo Size" class="not-medium-zoom-image" style="display: inline; vertical-align: inherit;" /></a>&nbsp;<a href="https://choosealicense.com/licenses/apache-2.0/" style="vertical-align: inherit;" target="_blank"><img src="https://img.shields.io/github/license/easyeda/pro-api-sdk" alt="GitHub License" class="not-medium-zoom-image" style="display: inline; vertical-align: inherit;" /></a>&nbsp;<a href="https://www.npmjs.com/package/@jlceda/pro-api-types" style="vertical-align: inherit;" target="_blank"><img src="https://img.shields.io/npm/v/%40jlceda%2Fpro-api-types?label=pro-api-types" alt="NPM Version" class="not-medium-zoom-image" style="display: inline; vertical-align: inherit;" /></a>&nbsp;<a href="https://www.npmjs.com/package/@jlceda/pro-api-types" style="vertical-align: inherit;" target="_blank"><img src="https://img.shields.io/npm/d18m/%40jlceda%2Fpro-api-types" alt="NPM Downloads" class="not-medium-zoom-image" style="display: inline; vertical-align: inherit;" /></a>
+- **AI-Driven**: Uses a proprietary large model to intelligently recognize and generate packages
+- **PDF Parsing**: Extracts component information directly from PDF datasheets
+- **High Accuracy**: Automatically identifies pin information, package parameters, and component specifications
+- **Multi-Package Support**: Supports various package types such as BGA, SOIC, QFN, and more
+- **Visual Interface**: Offers an intuitive graphical user interface
+- **Real-Time Preview**: Enables real-time preview of generated packages
 
-> [!NOTE]
->
-> For more information on the development of EasyEDA Pro Extension, please visit：[https://prodocs.easyeda.com/en/api/guide/](https://prodocs.easyeda.com/en/api/guide/)
+## Core Functions
 
-## Enter Development
+### Package Generation
 
-This development tool set contains all the environments and tools for developing the [EasyEDA Pro Edition](https://pro.easyeda.com/) extension package, and has built-in recommended rules for Prettier and ESLint.
+- **Parameter Extraction**: Extracts package dimension parameters from technical documents
+- **Automatic Generation**: Automatically generates packages based on extracted parameters
+- **Preview Function**: Provides real-time package preview
+- **Parameter Adjustment**: Supports manual fine-tuning of package parameters
 
-1. Clone the [pro-api-sdk](https://github.com/easyeda/pro-api-sdk) project repository to your local computer
+## Supported Package Types
 
-    ```shell
-    git clone --depth=1 https://github.com/easyeda/pro-api-sdk.git
-    ```
+| Package Type | Support Status | Description                                                      |
+| ------------ | -------------- | ---------------------------------------------------------------- |
+| **BGA**      | ✅ Supported   | Ball Grid Array package; inner rectangle pending API enhancement |
+| **QFN**      | ✅ Supported   | Quad Flat No-Lead package                                        |
+| **SOP**      | ✅ Supported   | Small Outline Package                                            |
 
-2. Initializing the development environment (installing dependencies)
+## Usage Guide
 
-    ```shell
-    npm install
-    ```
+### Creating a Package
 
-3. Make your changes ...
+![1.gif](images/1.gif)
 
-4. Compile the extension package
-
-    ```shell
-    npm run build
-    ```
-
-5. Install the extension package generated under `./build/dist/` in EasyEDA Pro Edition
-
-## Open-source License
-
-<a href="https://choosealicense.com/licenses/apache-2.0/" style="vertical-align: inherit;" target="_blank"><img src="https://img.shields.io/github/license/easyeda/pro-api-sdk" alt="GitHub License" class="not-medium-zoom-image" style="display: inline; vertical-align: inherit;" /></a>
-
-This development tool uses the [Apache License 2.0](https://choosealicense.com/licenses/apache-2.0/) open source license agreement. You can only use the **嘉立创EDA** and **EasyEDA** trademark information for the **function description part** and **open source release title part** of the extension package developed based on this tool.
+1. In the EDA editor, select File → New → Package.
+2. From the top navigation bar of the symbol editor, choose AI Library Builder → Create.
+3. In the AI Package Generator, upload the PDF from which the package information will be extracted.
+4. Click Get Parsing Results. All detected package results will be listed. If nothing appears, wait a few seconds and try again.
+5. Select the desired result and click Create Package to generate the corresponding package.

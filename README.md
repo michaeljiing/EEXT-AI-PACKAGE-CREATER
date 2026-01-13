@@ -1,41 +1,41 @@
-# AI Intelligent Library Builder
+# AI 智能建库助手
 
-An AI-powered package generator based on a self-developed large language model, providing an intelligent component library construction solution for JLC EDA Professional Edition.
+基于自研大模型的封装生成器，为嘉立创EDA专业版提供智能化的元件库构建解决方案。
 
-## Features
+## 功能特性
 
-- **AI-Driven**: Uses a proprietary large model to intelligently recognize and generate packages
-- **PDF Parsing**: Extracts component information directly from PDF datasheets
-- **High Accuracy**: Automatically identifies pin information, package parameters, and component specifications
-- **Multi-Package Support**: Supports various package types such as BGA, SOIC, QFN, and more
-- **Visual Interface**: Offers an intuitive graphical user interface
-- **Real-Time Preview**: Enables real-time preview of generated packages
+- **AI 驱动**: 基于自研大模型智能识别和生成封装
+- **PDF 解析**: 支持从 PDF 数据手册中提取元件信息
+- **精准识别**: 自动识别引脚信息、封装参数和元件规格
+- **多封装支持**: 支持 BGA、SOIC、QFN 等多种封装类型
+- **可视化界面**: 提供直观的图形化操作界面
+- **实时预览**: 支持封装的实时预览功能
 
-## Core Functions
+## 主要功能
 
-### Package Generation
+### 封装生成
 
-- **Parameter Extraction**: Extracts package dimension parameters from technical documents
-- **Automatic Generation**: Automatically generates packages based on extracted parameters
-- **Preview Function**: Provides real-time package preview
-- **Parameter Adjustment**: Supports manual fine-tuning of package parameters
+- **参数提取**: 从技术文档中提取封装尺寸参数
+- **自动生成**: 根据参数自动生成对应封装
+- **预览功能**: 提供封装的实时预览
+- **参数调整**: 支持封装参数的手动微调
 
-## Supported Package Types
+## 支持的封装类型
 
-| Package Type | Support Status | Description                                                      |
-| ------------ | -------------- | ---------------------------------------------------------------- |
-| **BGA**      | ✅ Supported   | Ball Grid Array package; inner rectangle pending API enhancement |
-| **QFN**      | ✅ Supported   | Quad Flat No-Lead package                                        |
-| **SOP**      | ✅ Supported   | Small Outline Package                                            |
+| 封装类型 | 支持状态 | 说明                            |
+| -------- | -------- | ------------------------------- |
+| **BGA**  | ✅ 支持  | 球栅阵列封装，中间矩形待API完善 |
+| **QFN**  | ✅ 支持  | 四方扁平无引脚封装              |
+| **SOP**  | ✅ 支持  | 小外形封装                      |
 
-## Usage Guide
+## 使用说明
 
-### Creating a Package
+### 封装创建
 
 ![1.gif](images/1.gif)
 
-1. In the EDA editor, select File → New → Package.
-2. From the top navigation bar of the symbol editor, choose AI Library Builder → Create.
-3. In the AI Package Generator, upload the PDF from which the package information will be extracted.
-4. Click Get Parsing Results. All detected package results will be listed. If nothing appears, wait a few seconds and try again.
-5. Select the desired result and click Create Package to generate the corresponding package.
+1. 在EDA编辑器中选择`文件`-`新建`-`封装`。
+2. 在符号编辑界面的顶部导航栏选择`AI建库`-`创建`。
+3. 在`AI封装生成器`中的左侧上传需要提取符号的PDF。
+4. 点击`获取解析结果`，会列出所有的封装结果，如果没有出来，可以稍等几秒再试一次。
+5. 选择对应的结果，点击`创建封装`生成相应的封装。
