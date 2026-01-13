@@ -1,0 +1,46 @@
+{
+	"name": "ai-package-creator",
+	"uuid": "e158584678bb4a16975d1e8568d6eb54",
+	"displayName": "AI创建封装",
+	"description": "基于大模型的封装生成器",
+	"version": "1.0.0",
+	"publisher": "JLCEDA <support@lceda.cn>",
+	"engines": {
+		"eda": "^2.3.0"
+	},
+	"license": "Apache-2.0",
+	"repository": {
+		"type": "extension-store",
+		"url": ""
+	},
+	"categories": "Other",
+	"keywords": ["SDK"],
+	"images": {
+		"logo": "./images/logo.png"
+	},
+	"homepage": "https://pro.lceda.cn",
+	"bugs": "https://lceda.cn/page/feedback?originPage=other",
+	"activationEvents": {},
+	"entry": "./dist/index",
+	"dependentExtensions": {},
+	"headerMenus": {
+		"footprint": [
+			{
+				"id": "package",
+				"title": "AI建库",
+				"menuItems": [
+					{
+						"id": "footprint",
+						"title": "创建",
+						"registerFn": "footprint"
+					},
+					{
+						"id": "footprintShow",
+						"title": "继续",
+						"registerFn": "footprintShow"
+					}
+				]
+			}
+		]
+	}
+}
