@@ -498,13 +498,14 @@
 					{ name: '引脚纵向间距(PP)', key: 'pin_pitch', unit: 'mm' },
 				],
 				'QFN': [
-					{ name: '引脚数(左右)', key: 'pin_count_lr', unit: '' },
-					{ name: '引脚数(上下)', key: 'pin_count_tb', unit: '' },
-					{ name: '本体长度(BL)', key: 'body_length', unit: 'mm' },
-					{ name: '本体宽度(BW)', key: 'body_width', unit: 'mm' },
-					{ name: '引脚长度(PL)', key: 'pin_length', unit: 'mm' },
-					{ name: '引脚宽度(PW)', key: 'pin_width', unit: 'mm' },
-					{ name: '引脚间距(PP)', key: 'pin_pitch', unit: 'mm' },
+					{ name: '引脚数(左右)', key: 'Pin Count Y', unit: '' },
+					{ name: '引脚数(上下)', key: 'Pin Count X', unit: '' },
+					{ name: '本体长度(BL)', key: 'Package Body Size X', unit: 'mm' },
+					{ name: '本体宽度(BW)', key: 'Package Body Size Y', unit: 'mm' },
+					{ name: '引脚长度(PL)', key: 'Lead Length', unit: 'mm' },
+					{ name: '引脚宽度(PW)', key: 'Lead Width', unit: 'mm' },
+					{ name: '引脚间距(TB)', key: 'Lead Pitch X', unit: 'mm' },
+					{ name: '引脚间距(LR)', key: 'Lead Pitch Y', unit: 'mm' },
 				],
 				'SOIC': [
 					{ name: '引脚数量', key: 'Pin Count', unit: '' },
@@ -517,7 +518,7 @@
 				],
 			};
 
-			let currentDatasheetUuid = null;
+			let currentDatasheetUuid = '92f3cf4d-18ee-4a9d-b2a1-4ca09c5b3c73';
 			let currentPdf = null;
 			let currentPageNum = 1;
 			let totalPages = 0;
@@ -836,7 +837,7 @@
 								row.innerHTML = `
 			                         <td><input type="text" value="${param.name}" readonly data-key="${param.key}"></td>
 			                         <td><input type="text" value="${value}"></td>
-			                         <td><input type="text" value="${param.unit}"></td>
+			                         <td><input type="text" value="${param.unit}" readonly></td>
 			                         <td><button class="delete-btn" onclick="deleteRow(this)">删除</button></td>
 			                     `;
 							});
@@ -942,11 +943,13 @@
 						// 根据封装类型调用对应的创建函数
 						if (packageType === 'SOIC') {
 							createSOPFootprint(packageResult);
-							eda.sys_IFrame.hideIFrame('footprint');
-							eda.sys_ToastMessage.showMessage('封装创建成功，支持在菜单中通过点击"继续"选项以重新打开窗口', 3);
+						} else if (packageType === 'QFN') {
+							createQFNFootprint(packageResult);
+						} else if (packageType === 'BGA') {
+							// TODO
 						}
-						// 可以在这里添加其他封装类型的处理
-
+						eda.sys_IFrame.hideIFrame('footprint');
+						eda.sys_ToastMessage.showMessage('封装创建成功，支持在菜单中通过点击"继续"选项以重新打开窗口', 3);
 						eda.sys_ToastMessage.showMessage('封装创建成功！', 3);
 					} else {
 						console.error('封装创建失败:', response.statusText);
@@ -1079,6 +1082,133 @@
 				eda.pcb_PrimitivePolyline.create('line', EPCB_LayerId.TOP_SILKSCREEN, connectingArc, 6);
 
 				console.log('SOP封装创建完成，总引脚数:', pinCount);
+			}
+
+			function createQFNFootprint(params) {
+				console.log('创建QFN封装:', params);
+
+				// 获取参数，设置默认值
+				const pinCountLR = parseInt(params['Pin Count Y']) || 6; // 左右引脚数
+				const pinCountTB = parseInt(params['Pin Count X']) || 8; // 上下引脚数
+				const bodyLength = parseFloat(params['Package Body Size X']) || 5.0; // 本体长度(BL)
+				const bodyWidth = parseFloat(params['Package Body Size Y']) || 4.0; // 本体宽度(BW)
+				const pinLength = parseFloat(params['Lead Length']) || 0.4; // 引脚长度(PL)
+				const pinWidth = parseFloat(params['Lead Width']) || 0.25; // 引脚宽度(PW)
+				const pinPitchTB = parseFloat(params['Lead Pitch X']) || 0.5; // 引脚间距(TB)
+				const pinPitchLR = parseFloat(params['Lead Pitch Y']) || 0.5; // 引脚间距(LR)
+
+				console.log('QFN参数:', {
+					pinCountLR,
+					pinCountTB,
+					bodyLength,
+					bodyWidth,
+					pinLength,
+					pinWidth,
+					pinPitchTB,
+					pinPitchLR,
+				});
+
+				// 转换为EDA单位(mil，1mm = 39.3701mil)
+				const mmToMil = 39.3701;
+				const bodyLengthMil = bodyLength * mmToMil;
+				const bodyWidthMil = bodyWidth * mmToMil;
+				const pinLengthMil = pinLength * mmToMil;
+				const pinWidthMil = pinWidth * mmToMil;
+				const pinPitchTBMil = pinPitchTB * mmToMil;
+				const pinPitchLRMil = pinPitchLR * mmToMil;
+				// 计算引脚位置
+				let pinNumber = 1;
+
+				// 左侧引脚 (引脚1开始，从上到下)
+				for (let i = 0; i < pinCountLR; i++) {
+					const y = ((pinCountLR - 1) * pinPitchTBMil) / 2 - i * pinPitchTBMil;
+					const x = -bodyWidthMil / 2 - pinLengthMil / 2;
+					eda.pcb_PrimitivePad.create(EPCB_LayerId.TOP, pinNumber.toString(), x, y, 0, [
+						EPCB_PrimitivePadShapeType.RECTANGLE,
+						pinLengthMil,
+						pinWidthMil,
+						0,
+					]);
+					pinNumber++;
+				}
+
+				// 底部引脚 (从左到右)
+				for (let i = 0; i < pinCountTB; i++) {
+					const x = (-(pinCountTB - 1) * pinPitchLRMil) / 2 + i * pinPitchLRMil;
+					const y = -bodyLengthMil / 2 - pinLengthMil / 2;
+					eda.pcb_PrimitivePad.create(
+						EPCB_LayerId.TOP,
+						pinNumber.toString(),
+						x,
+						y,
+						90, // 90度旋转
+						[EPCB_PrimitivePadShapeType.RECTANGLE, pinLengthMil, pinWidthMil, 0],
+					);
+					pinNumber++;
+				}
+
+				// 右侧引脚 (从下到上)
+				for (let i = 0; i < pinCountLR; i++) {
+					const y = (-(pinCountLR - 1) * pinPitchTBMil) / 2 + i * pinPitchTBMil;
+					const x = bodyWidthMil / 2 + pinLengthMil / 2;
+					eda.pcb_PrimitivePad.create(EPCB_LayerId.TOP, pinNumber.toString(), x, y, 0, [
+						EPCB_PrimitivePadShapeType.RECTANGLE,
+						pinLengthMil,
+						pinWidthMil,
+						0,
+					]);
+					pinNumber++;
+				}
+
+				// 顶部引脚 (从右到左)
+				for (let i = 0; i < pinCountTB; i++) {
+					const x = ((pinCountTB - 1) * pinPitchLRMil) / 2 - i * pinPitchLRMil;
+					const y = bodyLengthMil / 2 + pinLengthMil / 2;
+					eda.pcb_PrimitivePad.create(
+						EPCB_LayerId.TOP,
+						pinNumber.toString(),
+						x,
+						y,
+						90, // 90度旋转
+						[EPCB_PrimitivePadShapeType.RECTANGLE, pinLengthMil, pinWidthMil, 0],
+					);
+					pinNumber++;
+				}
+
+				// 创建丝印轮廓
+				const silkOffset = 6; // 丝印偏移量(mil)
+				const silkLength = 18; // 丝印线段长度(mil)
+				const outlineX = bodyWidthMil / 2 + silkOffset;
+				const outlineY = bodyLengthMil / 2 + silkOffset;
+
+				// 创建四个角的丝印线段
+				// 左上角
+				const line1 = eda.pcb_MathPolygon.createPolygon([-outlineX, outlineY, 'L', -outlineX + silkLength, outlineY]);
+				const line2 = eda.pcb_MathPolygon.createPolygon([-outlineX, outlineY, 'L', -outlineX, outlineY - silkLength]);
+
+				// 左下角
+				const line3 = eda.pcb_MathPolygon.createPolygon([-outlineX, -outlineY, 'L', -outlineX, -outlineY + silkLength]);
+				const line4 = eda.pcb_MathPolygon.createPolygon([-outlineX, -outlineY, 'L', -outlineX + silkLength, -outlineY]);
+
+				// 右下角
+				const line5 = eda.pcb_MathPolygon.createPolygon([outlineX, -outlineY, 'L', outlineX - silkLength, -outlineY]);
+				const line6 = eda.pcb_MathPolygon.createPolygon([outlineX, -outlineY, 'L', outlineX, -outlineY + silkLength]);
+
+				// 右上角
+				const line7 = eda.pcb_MathPolygon.createPolygon([outlineX, outlineY, 'L', outlineX - silkLength, outlineY]);
+				const line8 = eda.pcb_MathPolygon.createPolygon([outlineX, outlineY, 'L', outlineX, outlineY - silkLength]);
+
+				// 创建丝印
+				eda.pcb_PrimitivePolyline.create('line', EPCB_LayerId.TOP_SILKSCREEN, line1, 6);
+				eda.pcb_PrimitivePolyline.create('line', EPCB_LayerId.TOP_SILKSCREEN, line2, 6);
+				eda.pcb_PrimitivePolyline.create('line', EPCB_LayerId.TOP_SILKSCREEN, line3, 6);
+				eda.pcb_PrimitivePolyline.create('line', EPCB_LayerId.TOP_SILKSCREEN, line4, 6);
+				eda.pcb_PrimitivePolyline.create('line', EPCB_LayerId.TOP_SILKSCREEN, line5, 6);
+				eda.pcb_PrimitivePolyline.create('line', EPCB_LayerId.TOP_SILKSCREEN, line6, 6);
+				eda.pcb_PrimitivePolyline.create('line', EPCB_LayerId.TOP_SILKSCREEN, line7, 6);
+				eda.pcb_PrimitivePolyline.create('line', EPCB_LayerId.TOP_SILKSCREEN, line8, 6);
+
+				console.log('QFN封装创建完成，总引脚数:', pinNumber - 1);
 			}
 		</script>
 	</body>
