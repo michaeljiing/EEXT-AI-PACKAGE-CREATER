@@ -489,13 +489,13 @@
 			const zoomLevel = document.getElementById('zoomLevel');
 			const packageParams = {
 				'BGA': [
-					{ name: '引脚行数', key: 'pin_rows', unit: '' },
-					{ name: '引脚列数', key: 'pin_cols', unit: '' },
-					{ name: '本体长度(BL)', key: 'body_length', unit: 'mm' },
-					{ name: '本体宽度(BW)', key: 'body_width', unit: 'mm' },
-					{ name: '引脚直径(PD)', key: 'pin_diameter', unit: 'mm' },
-					{ name: '引脚间距(PS)', key: 'pin_spacing', unit: 'mm' },
-					{ name: '引脚纵向间距(PP)', key: 'pin_pitch', unit: 'mm' },
+					{ name: '引脚行数', key: 'Ball Count Y', unit: '' },
+					{ name: '引脚列数', key: 'Ball Count X', unit: '' },
+					{ name: '本体长度(BL)', key: 'Package Body Size X', unit: 'mm' },
+					{ name: '本体宽度(BW)', key: 'Package Body Size Y', unit: 'mm' },
+					{ name: '引脚直径(PD)', key: 'Ball Diameter', unit: 'mm' },
+					{ name: '引脚间距(PS)', key: 'Ball Pitch X', unit: 'mm' },
+					{ name: '引脚纵向间距(PP)', key: 'Ball Pitch Y', unit: 'mm' },
 				],
 				'QFN': [
 					{ name: '引脚数(左右)', key: 'Pin Count Y', unit: '' },
@@ -518,7 +518,7 @@
 				],
 			};
 
-			// let currentDatasheetUuid = '92f3cf4d-18ee-4a9d-b2a1-4ca09c5b3c73';
+			// let currentDatasheetUuid = 'accd1929-2796-4ea0-ba04-5f43cdd6336e';
 			let currentDatasheetUuid = null;
 			let currentPdf = null;
 			let currentPageNum = 1;
@@ -947,7 +947,7 @@
 						} else if (packageType === 'QFN') {
 							createQFNFootprint(packageResult);
 						} else if (packageType === 'BGA') {
-							// TODO
+							createBGAFootprint(packageResult);
 						}
 						eda.sys_IFrame.hideIFrame('footprint');
 						eda.sys_ToastMessage.showMessage('封装创建成功，支持在菜单中通过点击"继续"选项以重新打开窗口', 3);
@@ -1210,6 +1210,126 @@
 				eda.pcb_PrimitivePolyline.create('line', EPCB_LayerId.TOP_SILKSCREEN, line8, 6);
 
 				console.log('QFN封装创建完成，总引脚数:', pinNumber - 1);
+			}
+
+			function createBGAFootprint(params) {
+				console.log('创建BGA封装:', params);
+
+				// 获取参数，设置默认值
+				const pinRows = parseInt(params['引脚行数']) || parseInt(params['Ball Count Y']) || 11; // 引脚行数
+				const pinCols = parseInt(params['引脚列数']) || parseInt(params['Ball Count X']) || 11; // 引脚列数
+				const bodyLength =
+					parseFloat(params['本体长度']) || parseFloat(params['本体长度(BL)']) || parseFloat(params['Package Body Size X']) || 6.2; // 本体长度(BL)
+				const bodyWidth =
+					parseFloat(params['本体宽度']) || parseFloat(params['本体宽度(BW)']) || parseFloat(params['Package Body Size Y']) || 6.2; // 本体宽度(BW)
+				const pinDiameter =
+					parseFloat(params['引脚直径']) || parseFloat(params['引脚直径(PD)']) || parseFloat(params['Ball Diameter']) || 0.3; // 引脚直径(PD)
+				const pinSpacing = parseFloat(params['引脚间距']) || parseFloat(params['引脚间距(PS)']) || parseFloat(params['Ball Pitch X']) || 0.5; // 引脚间距(PS)
+				// 引脚纵向间距(PP)，如果没有提供PP参数，则使用PS的值
+				const pinPitchVertical =
+					parseFloat(params['引脚纵向间距']) || parseFloat(params['引脚纵向间距(PP)']) || parseFloat(params['Ball Pitch Y']) || pinSpacing; // 引脚纵向间距(PP)
+
+				console.log('BGA参数:', {
+					pinRows,
+					pinCols,
+					bodyLength,
+					bodyWidth,
+					pinDiameter,
+					pinSpacing,
+					pinPitchVertical,
+				});
+
+				// 转换为EDA单位(mil，1mm = 39.3701mil)
+				const mmToMil = 39.3701;
+				const bodyLengthMil = bodyLength * mmToMil;
+				const bodyWidthMil = bodyWidth * mmToMil;
+				const pinDiameterMil = pinDiameter * mmToMil;
+				const pinSpacingMil = pinSpacing * mmToMil;
+				const pinPitchVerticalMil = pinPitchVertical * mmToMil;
+
+				// 计算引脚阵列的起始位置（左上角）
+				const startX = (-(pinCols - 1) * pinSpacingMil) / 2;
+				const startY = ((pinRows - 1) * pinPitchVerticalMil) / 2;
+
+				const silkClearance = 10; // 丝印与实体的安全间距(mil)
+				// 动态计算丝印长度（Y方向）
+				// 取本体长度与引脚覆盖范围（二者加上安全间距）中的较大者
+				const silkLength = bodyLengthMil + 2 * silkClearance;
+
+				// 动态计算丝印宽度（X方向）
+				// 取本体宽度与两列引脚跨距（含焊盘直径）加上安全间距中的较大者
+				const silkWidth = bodyWidthMil + 2 * silkClearance;
+
+				// 生成BGA引脚标号（A1, A2, ..., B1, B2, ...）
+				function getBGAPinName(row, col) {
+					const rowLetter = String.fromCharCode(65 + row); // A, B, C, ...
+					const colNumber = col + 1; // 1, 2, 3, ...
+					return rowLetter + colNumber;
+				}
+
+				// 创建BGA引脚阵列
+				for (let row = 0; row < pinRows; row++) {
+					for (let col = 0; col < pinCols; col++) {
+						const x = startX + col * pinSpacingMil;
+						const y = startY - row * pinPitchVerticalMil;
+						const pinName = getBGAPinName(row, col);
+
+						// 创建圆形焊盘（BGA引脚为球形焊点）
+						eda.pcb_PrimitivePad.create(EPCB_LayerId.TOP, pinName, x, y, 0, [
+							EPCB_PrimitivePadShapeType.ELLIPSE,
+							pinDiameterMil,
+							pinDiameterMil,
+						]);
+					}
+				}
+
+				// 创建丝印轮廓（封装外形）- 使用固定尺寸
+				const outlineX = silkWidth / 2; // 丝印框宽度的一半
+				const outlineY = silkLength / 2; // 丝印框长度的一半
+
+				// 创建三边矩形外框（不包含上边，为圆弧留出空间）
+				// 左边
+				const leftLine = eda.pcb_MathPolygon.createPolygon([-outlineX, outlineY, 'L', -outlineX, -outlineY]);
+				// 下边
+				const bottomLine = eda.pcb_MathPolygon.createPolygon([-outlineX, -outlineY, 'L', outlineX, -outlineY]);
+				// 右边
+				const rightLine = eda.pcb_MathPolygon.createPolygon([outlineX, -outlineY, 'L', outlineX, outlineY]);
+
+				const upLine = eda.pcb_MathPolygon.createPolygon([outlineX, outlineY, 'L', -outlineX, outlineY]);
+
+				eda.pcb_PrimitivePolyline.create('line', EPCB_LayerId.TOP_SILKSCREEN, leftLine, 6);
+				eda.pcb_PrimitivePolyline.create('line', EPCB_LayerId.TOP_SILKSCREEN, bottomLine, 6);
+				eda.pcb_PrimitivePolyline.create('line', EPCB_LayerId.TOP_SILKSCREEN, rightLine, 6);
+				eda.pcb_PrimitivePolyline.create('line', EPCB_LayerId.TOP_SILKSCREEN, upLine, 6);
+
+				// 在A1角落（左上角）添加指示标记
+				const markSize = 12; // 标记大小(mil)
+				const markOffset = 4; // 标记偏移量(mil)
+
+				// 创建A1角落的三角形标记
+				const triangleMark = eda.pcb_MathPolygon.createPolygon([
+					-outlineX + markOffset,
+					outlineY - markOffset,
+					'L',
+					-outlineX + markOffset + markSize,
+					outlineY - markOffset,
+					'L',
+					-outlineX + markOffset,
+					outlineY - markOffset - markSize,
+					'L',
+					-outlineX + markOffset,
+					outlineY - markOffset,
+				]);
+				eda.pcb_PrimitivePolyline.create('line', EPCB_LayerId.TOP_SILKSCREEN, triangleMark, 6);
+
+				// 添加A1标识圆点
+				const dotX = -outlineX + markOffset + markSize / 2;
+				const dotY = outlineY - markOffset - markSize / 2;
+				const dotRadius = 2; // 小圆点半径(mil)
+				const dotCircle = eda.pcb_MathPolygon.createPolygon([dotX, dotY, 'A', dotX + dotRadius, dotY, dotX, dotY]);
+				eda.pcb_PrimitivePolyline.create('line', EPCB_LayerId.TOP_SILKSCREEN, dotCircle, 6);
+
+				console.log('BGA封装创建完成，总引脚数:', pinRows * pinCols);
 			}
 		</script>
 	</body>
